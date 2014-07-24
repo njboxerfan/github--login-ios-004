@@ -1,3 +1,8 @@
+---
+tags: oauth, networking, advanced
+languages: objc
+---
+
 # Github Login
 
 Our previous Github Starring  app was hard-coded to be logged in as you. Obviously that's not great. Let's implement an authentication.
