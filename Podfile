@@ -1,5 +1,7 @@
 platform :ios, '7.0'
 
+pod 'AFOAuth2Manager'
+pod 'NSURL+ParseQuery'
 pod 'AFNetworking'
 pod 'OHHTTPStubs'
 target 'github-repo-starringTests' do

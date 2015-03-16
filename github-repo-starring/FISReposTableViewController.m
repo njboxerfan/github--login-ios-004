@@ -10,6 +10,8 @@
 #import "FISReposDataStore.h"
 #import "FISGithubRepository.h"
 #import "FISGithubAPIClient.h"
+#import "FISViewController.h"
+#import <AFOAuth2Manager.h>
 
 @interface FISReposTableViewController ()
 @property (strong, nonatomic) FISReposDataStore *dataStore;
@@ -34,16 +36,34 @@
 
     self.tableView.accessibilityIdentifier = @"Repo Table View";
     self.tableView.accessibilityLabel=@"Repo Table View";
-    self.dataStore = [FISReposDataStore sharedDataStore];
-    [self.dataStore getRepositoriesWithCompletion:^(BOOL success) {
-        [self.tableView reloadData];
-    }];
 
+//    [AFOAuthCredential deleteCredentialWithIdentifier:@"githubToken"];
+    
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
     // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
+}
+
+-(void)viewDidAppear:(BOOL)animated
+{
+    AFOAuthCredential *credential = [AFOAuthCredential retrieveCredentialWithIdentifier:@"githubToken"];
+    NSLog(@"Credential: %@", credential);
+    
+    if (!credential)
+    {
+        FISViewController *loginView = [self.storyboard instantiateViewControllerWithIdentifier:@"loginView"];
+        
+        [self presentViewController:loginView animated:YES completion:nil];
+    }
+    else
+    {
+        self.dataStore = [FISReposDataStore sharedDataStore];
+        [self.dataStore getRepositoriesWithCompletion:^(BOOL success) {
+            [self.tableView reloadData];
+        }];
+    }
 }
 
 - (void)didReceiveMemoryWarning

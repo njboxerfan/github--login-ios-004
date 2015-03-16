@@ -7,8 +7,11 @@
 //
 
 #import "FISViewController.h"
+#import "FISGithubAPIClient.h"
 
 @interface FISViewController ()
+
+- (IBAction)loginTapped:(id)sender;
 
 @end
 
@@ -25,5 +28,11 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (IBAction)loginTapped:(id)sender
+{
+    [FISGithubAPIClient login];
+    
+    [self dismissViewControllerAnimated:YES completion:nil];}
 
 @end

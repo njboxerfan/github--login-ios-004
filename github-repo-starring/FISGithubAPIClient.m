@@ -9,16 +9,25 @@
 #import "FISGithubAPIClient.h"
 #import "FISConstants.h"
 #import <AFNetworking.h>
+#import <AFOAuth2Manager/AFHTTPRequestSerializer+OAuth2.h>
+#import <AFOAuth2Manager.h>
 
 @implementation FISGithubAPIClient
 NSString *const GITHUB_API_URL=@"https://api.github.com";
+
++(void)login
+{
+    NSURL *myURL = [NSURL URLWithString:@"https://github.com/login/oauth/authorize?scope=repo&client_id=f7a6f23105666ae6f03c"];
+
+    [[UIApplication sharedApplication] openURL:myURL];
+}
 
 +(void)getRepositoriesWithCompletion:(void (^)(NSArray *))completionBlock
 {
     NSString *githubURL = [NSString stringWithFormat:@"%@/repositories?client_id=%@&client_secret=%@",GITHUB_API_URL,GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET];
 
     AFHTTPSessionManager *manager = [AFHTTPSessionManager manager];
-
+    
     [manager GET:githubURL parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         completionBlock(responseObject);
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
@@ -30,18 +39,13 @@ NSString *const GITHUB_API_URL=@"https://api.github.com";
 {
     NSString *url = [NSString stringWithFormat:@"%@/user/starred/%@?client_id=%@&client_secret=%@",GITHUB_API_URL,fullName, GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET];
 
-
     // New AF Manager
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] init];
 
-    // Need to create a new serializer to set the auth header
-    AFHTTPRequestSerializer *serializer = [[AFHTTPRequestSerializer alloc] init];
-
-    // Set the Auth Header
-    [serializer setAuthorizationHeaderFieldWithUsername:GITHUB_ACCESS_TOKEN password:@""];
-
-    // Set the header for the next request
-    manager.requestSerializer = serializer;
+    AFOAuthCredential *credential =
+    [AFOAuthCredential retrieveCredentialWithIdentifier:@"githubToken"];
+    
+    [manager.requestSerializer setAuthorizationHeaderFieldWithCredential:credential];
 
     // Make the Request
     [manager GET:url parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
@@ -61,11 +65,14 @@ NSString *const GITHUB_API_URL=@"https://api.github.com";
 +(void)starRepoWithFullName:(NSString *)fullName CompletionBlock:(void (^)(void))completionBlock
 {
     NSString *url = [NSString stringWithFormat:@"%@/user/starred/%@?client_id=%@&client_secret=%@",GITHUB_API_URL,fullName, GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET];
+    
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] init];
-    AFHTTPRequestSerializer *serializer = [[AFHTTPRequestSerializer alloc] init];
-    [serializer setAuthorizationHeaderFieldWithUsername:GITHUB_ACCESS_TOKEN password:@""];
-    manager.requestSerializer = serializer;
-
+    
+    AFOAuthCredential *credential =
+    [AFOAuthCredential retrieveCredentialWithIdentifier:@"githubToken"];
+    
+    [manager.requestSerializer setAuthorizationHeaderFieldWithCredential:credential];
+    
     [manager PUT:url parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         completionBlock();
     } failure:^(NSURLSessionDataTask *task, NSError *error) {
@@ -76,10 +83,13 @@ NSString *const GITHUB_API_URL=@"https://api.github.com";
 +(void)unstarRepoWithFullName:(NSString *)fullName CompletionBlock:(void (^)(void))completionBlock
 {
     NSString *url = [NSString stringWithFormat:@"%@/user/starred/%@?client_id=%@&client_secret=%@",GITHUB_API_URL,fullName, GITHUB_CLIENT_ID,GITHUB_CLIENT_SECRET];
+    
     AFHTTPSessionManager *manager = [[AFHTTPSessionManager alloc] init];
-    AFHTTPRequestSerializer *serializer = [[AFHTTPRequestSerializer alloc] init];
-    [serializer setAuthorizationHeaderFieldWithUsername:GITHUB_ACCESS_TOKEN password:@""];
-    manager.requestSerializer = serializer;
+    
+    AFOAuthCredential *credential =
+    [AFOAuthCredential retrieveCredentialWithIdentifier:@"githubToken"];
+    
+    [manager.requestSerializer setAuthorizationHeaderFieldWithCredential:credential];
 
     [manager DELETE:url parameters:nil success:^(NSURLSessionDataTask *task, id responseObject) {
         completionBlock();

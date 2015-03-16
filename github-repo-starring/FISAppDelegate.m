@@ -7,10 +7,46 @@
 //
 
 #import "FISAppDelegate.h"
+#import "FISConstants.h"
 #import <OHHTTPStubs.h>
+#import <AFOAuth2Manager.h>
+#import <NSURL+QueryParser.h>
+
 static BOOL isRunningTests(void) __attribute__((const));
 
 @implementation FISAppDelegate
+
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url
+{
+    NSDictionary *parsedQuery = [url parseQuery];
+    
+    NSString *authCode = parsedQuery[@"code"];
+
+    NSURL *baseURL = [NSURL URLWithString:@"https://github.com"];
+    
+    AFOAuth2Manager *OAuth2Manager =
+         [[AFOAuth2Manager alloc] initWithBaseURL:baseURL
+                                         clientID:GITHUB_CLIENT_ID
+                                           secret:GITHUB_CLIENT_SECRET];
+    
+    [OAuth2Manager setUseHTTPBasicAuthentication:NO];
+    
+    NSDictionary *parameters = @{@"code": authCode,
+                                 @"grant_type": kAFOAuthCodeGrantType
+                                };
+    
+    [OAuth2Manager authenticateUsingOAuthWithURLString:@"/login/oauth/access_token"
+                        parameters:parameters
+                        success:^(AFOAuthCredential *credential) {
+                            NSLog(@"Token: %@", credential.accessToken);
+                            [AFOAuthCredential storeCredential:credential withIdentifier:@"githubToken"];
+                        }
+                        failure:^(NSError *error) {
+                            NSLog(@"Error: %@", error);
+                        }];
+    
+    return YES;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
