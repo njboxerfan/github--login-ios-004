@@ -40,6 +40,8 @@ static BOOL isRunningTests(void) __attribute__((const));
                         success:^(AFOAuthCredential *credential) {
                             NSLog(@"Token: %@", credential.accessToken);
                             [AFOAuthCredential storeCredential:credential withIdentifier:@"githubToken"];
+                            
+                            [[NSNotificationCenter defaultCenter] postNotificationName:@"githubCredentialStored" object:nil];
                         }
                         failure:^(NSError *error) {
                             NSLog(@"Error: %@", error);

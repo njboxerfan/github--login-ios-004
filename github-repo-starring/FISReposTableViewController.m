@@ -36,9 +36,13 @@
 
     self.tableView.accessibilityIdentifier = @"Repo Table View";
     self.tableView.accessibilityLabel=@"Repo Table View";
-
-//    [AFOAuthCredential deleteCredentialWithIdentifier:@"githubToken"];
     
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(credentialsStored) name:@"githubCredentialStored" object:nil];
+    
+    FISViewController *loginView = [self.storyboard instantiateViewControllerWithIdentifier:@"loginView"];
+    
+    [self presentViewController:loginView animated:YES completion:nil];
+
     // Uncomment the following line to preserve selection between presentations.
     // self.clearsSelectionOnViewWillAppear = NO;
     
@@ -46,24 +50,12 @@
     // self.navigationItem.rightBarButtonItem = self.editButtonItem;
 }
 
--(void)viewDidAppear:(BOOL)animated
+-(void)credentialsStored
 {
-    AFOAuthCredential *credential = [AFOAuthCredential retrieveCredentialWithIdentifier:@"githubToken"];
-    NSLog(@"Credential: %@", credential);
-    
-    if (!credential)
-    {
-        FISViewController *loginView = [self.storyboard instantiateViewControllerWithIdentifier:@"loginView"];
-        
-        [self presentViewController:loginView animated:YES completion:nil];
-    }
-    else
-    {
-        self.dataStore = [FISReposDataStore sharedDataStore];
-        [self.dataStore getRepositoriesWithCompletion:^(BOOL success) {
-            [self.tableView reloadData];
-        }];
-    }
+    self.dataStore = [FISReposDataStore sharedDataStore];
+    [self.dataStore getRepositoriesWithCompletion:^(BOOL success) {
+        [self.tableView reloadData];
+    }];
 }
 
 - (void)didReceiveMemoryWarning
